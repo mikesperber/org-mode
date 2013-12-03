@@ -118,8 +118,8 @@
 ;;; Code:
 
 (eval-when-compile (require 'cl))
+(require 'timer)
 (require 'org)
-
 
 
 ;;; Definitions And Rules
