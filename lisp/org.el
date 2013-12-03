@@ -6199,20 +6199,24 @@ Use `org-reduced-level' to remove the effect of `org-odd-levels'."
 
 (defsubst org-re-property (property &optional literal)
   "Return a regexp matching a PROPERTY line.
-Match group 3 will be set to the value if it exists."
-  (concat "^\\(?4:[ \t]*\\)\\(?1::\\(?2:"
+Match group `org-re-property-value-group' will be set to the value if it exists."
+  (concat "^\\([ \t]*\\)\\(:\\("
 	  (if literal property (regexp-quote property))
-	  "\\):\\)[ \t]+\\(?3:[^ \t\r\n].*?\\)\\(?5:[ \t]*\\)$"))
+	  "\\):\\)[ \t]+\\([^ \t\r\n].*?\\)\\([ \t]*\\)$"))
+
+(defconst org-re-property-propkey-colons-group 2)
+(defconst org-re-property-propkey-group 3)
+(defconst org-re-property-indendation-group 1)
+(defconst org-re-property-value-group 4)
 
 (defconst org-property-re
   (org-re-property ".*?" 'literal)
   "Regular expression matching a property line.
 There are four matching groups:
-1: :PROPKEY: including the leading and trailing colon,
-2: PROPKEY without the leading and trailing colon,
-3: PROPVAL without leading or trailing spaces,
-4: the indentation of the current line,
-5: trailing whitespace.")
+`org-re-property-propkey-colons-group': :PROPKEY: including the leading and trailing colon,
+`org-re-property-propkey-group'       : PROPKEY without the leading and trailing colon,
+`org-re-property-value-group'         : PROPVAL without leading or trailing spaces,
+`org-re-property-indendation-group'   : the indentation of the current line")
 
 (defvar org-font-lock-hook nil
   "Functions to be called for special font lock stuff.")
@@ -6369,7 +6373,7 @@ needs to be inserted at a specific position in the font-lock sequence.")
 	  (goto-char (point-min))
 	  (while (re-search-forward org-property-re nil t)
 	    (mapc (lambda(p)
-		    (when (equal p (substring (match-string 1) 1 -1))
+		    (when (equal p (match-string org-re-property-propkey-group))
 		      (let ((o (make-overlay (match-beginning 0) (1+ (match-end 0)))))
 			(overlay-put o 'invisible t)
 			(overlay-put o 'org-custom-property t)
@@ -15351,8 +15355,8 @@ things up because then unnecessary parsing is avoided."
 	     (goto-char (car range))
 	     (while (re-search-forward org-property-re
 				       (cdr range) t)
-	       (setq key (org-match-string-no-properties 2)
-		     value (org-trim (or (org-match-string-no-properties 3) "")))
+	       (setq key (org-match-string-no-properties org-re-property-propkey-group)
+		     value (org-trim (or (org-match-string-no-properties org-re-property-value-group) "")))
 	       (unless (member key excluded)
 		 (push (cons key (or value "")) props)))))
 	 (if clocksum
@@ -15403,8 +15407,8 @@ when a \"nil\" value can supersede a non-nil value higher up the hierarchy."
 			    (setq props
 				  (org-update-property-plist
 				   key
-				   (if (match-end 3)
-				       (org-match-string-no-properties 3) "")
+				   (if (match-end org-re-property-value-group)
+				       (org-match-string-no-properties org-re-property-value-group) "")
 				   props)))))
 		    val)
 	       (goto-char (car range))
@@ -15620,7 +15624,7 @@ formats in the current buffer."
 	  (goto-char (car range))
 	  (while (re-search-forward org-property-re
 		  (cdr range) t)
-	    (add-to-list 'rtn (org-match-string-no-properties 2)))
+	    (add-to-list 'rtn (org-match-string-no-properties org-re-property-propkey-group)))
 	  (outline-next-heading))))
 
     (when include-specials
@@ -22202,9 +22206,9 @@ hierarchy of headlines by UP levels before marking the subtree."
       (setq column (current-column))
       (beginning-of-line 1)
       (if (looking-at org-property-re)
-	  (replace-match (concat (match-string 4)
+	  (replace-match (concat (match-string org-re-property-indendation-group)
 				 (format org-property-format
-					 (match-string 1) (match-string 3)))
+					 (match-string org-re-property-propkey-colons-group) (match-string org-re-property-value-group)))
 			 t t))
       (org-move-to-column column))))
 
