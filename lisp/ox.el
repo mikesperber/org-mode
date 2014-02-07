@@ -6082,7 +6082,7 @@ back to standard interface."
 	 ;; (?^B, ?^V, ?^S, ?^F, ?^A, ?&, ?# and ?q) are always
 	 ;; available.
 	 (allowed-keys
-	  (nconc (list 2 22 19 6 1)
+	  (nconc (list ?\^B ?\^V ?\^S ?\^F ?\^A)
 		 (if (not first-key) (org-uniquify (mapcar 'car entries))
 		   (let (sub-menu)
 		     (dolist (entry entries (sort (mapcar 'car sub-menu) '<))
@@ -6224,7 +6224,7 @@ options as CDR."
     ;; C-p, SPC, DEL).
     (while (and (setq key (read-char-exclusive prompt))
 		(not expertp)
-		(memq key '(14 16 ?\s ?\d)))
+		(memq key '(?\^N ?\^P ?\s ?\d)))
       (case key
 	(14 (if (not (pos-visible-in-window-p (point-max)))
 		(ignore-errors (scroll-up 1))
@@ -6260,10 +6260,10 @@ options as CDR."
      ;; Switch to asynchronous export stack.
      ((eq key ?&) '(stack))
      ;; Toggle options: C-b (2) C-v (22) C-s (19) C-f (6) C-a (1).
-     ((memq key '(2 22 19 6 1))
+     ((memq key '(?\^B ?\^V ^\^S ?\^F ?\^A))
       (org-export--dispatch-ui
-       (let ((option (case key (2 'body) (22 'visible) (19 'subtree)
-			   (6 'force) (1 'async))))
+       (let ((option (case key (?\^B 'body) (?\^V 'visible) (?\^S 'subtree)
+			   (?\^F 'force) (?\^A 'async))))
 	 (if (memq option options) (remq option options)
 	   (cons option options)))
        first-key expertp))
