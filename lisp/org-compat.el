@@ -404,9 +404,9 @@ Works on both Emacs and XEmacs."
 (defun org-float-time (&optional time)
   "Convert time value TIME to a floating point number.
 TIME defaults to the current time."
-  (if (featurep 'xemacs)
-      (time-to-seconds (or time (current-time)))
-    (float-time time)))
+  (if (fboundp 'float-time)
+      (float-time time)
+    (time-to-seconds (or time (current-time)))))
 
 ;; `user-error' is only available from 24.2.50 on
 (unless (fboundp 'user-error)
